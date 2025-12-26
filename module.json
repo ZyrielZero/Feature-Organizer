@@ -13,8 +13,8 @@
     "url": "https://github.com/ZyrielZero"
   }],
   "url": "https://github.com/ZyrielZero/feature-organizer",
-  "manifest": "https://github.com/ZyrielZero/feature-organizer/releases/latest/download/module.json",
-  "download": "https://github.com/ZyrielZero/feature-organizer/releases/download/v1.0.0/feature-organizer.zip",
+  "manifest": "https://raw.githubusercontent.com/ZyrielZero/feature-organizer/main/module.json",
+  "download": "https://github.com/ZyrielZero/feature-organizer/archive/refs/heads/main.zip",
   "bugs": "https://github.com/ZyrielZero/feature-organizer/issues",
   "changelog": "https://github.com/ZyrielZero/feature-organizer/blob/main/CHANGELOG.md",
   "readme": "https://github.com/ZyrielZero/feature-organizer/blob/main/README.md",

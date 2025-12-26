@@ -1,0 +1,35 @@
+<div class="feature-organizer-config">
+  <p class="hint">{{localize "FEATURE_ORGANIZER.Config.Hint"}}</p>
+  
+  <div class="category-list">
+    {{#each categories}}
+    <div class="category-row flexrow" data-category-id="{{this.id}}">
+      <div class="category-sort flexcol">
+        <button type="button" data-action="moveUp" data-category-id="{{this.id}}" title="{{localize 'FEATURE_ORGANIZER.MoveUp'}}">
+          <i class="fas fa-caret-up"></i>
+        </button>
+        <button type="button" data-action="moveDown" data-category-id="{{this.id}}" title="{{localize 'FEATURE_ORGANIZER.MoveDown'}}">
+          <i class="fas fa-caret-down"></i>
+        </button>
+      </div>
+      
+      <div class="category-fields flex1">
+        <input type="text" name="label-{{this.id}}" value="{{this.label}}" required placeholder="{{localize 'FEATURE_ORGANIZER.CategoryName'}}">
+      </div>
+      
+      <button type="button" class="delete-btn" data-action="deleteCategory" data-category-id="{{this.id}}" title="{{localize 'FEATURE_ORGANIZER.DeleteCategory'}}">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+    {{else}}
+    <p class="empty-state">{{localize "FEATURE_ORGANIZER.Config.NoCategories"}}</p>
+    {{/each}}
+  </div>
+  
+  <div class="form-footer">
+    <button type="button" data-action="addCategory" class="add-btn">
+      <i class="fas fa-plus"></i>
+      {{localize "FEATURE_ORGANIZER.AddCategory"}}
+    </button>
+  </div>
+</div>

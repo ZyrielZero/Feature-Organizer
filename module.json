@@ -1,0 +1,39 @@
+{
+  "id": "feature-organizer",
+  "title": "Feature Organizer",
+  "description": "Organize character features into custom categories with drag-and-drop support. Create unlimited custom categories, move features between native categories (Class, Background, Species, Feats), and reorder category cards to suit your workflow. Perfect for homebrew-heavy campaigns or anyone wanting better character sheet organization.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13.351",
+    "maximum": "13"
+  },
+  "authors": [{
+    "name": "Zyriel",
+    "url": "https://github.com/ZyrielZero"
+  }],
+  "url": "https://github.com/ZyrielZero/feature-organizer",
+  "manifest": "https://raw.githubusercontent.com/ZyrielZero/feature-organizer/main/module.json",
+  "download": "https://github.com/ZyrielZero/feature-organizer/releases/download/v1.0.0/feature-organizer.zip",
+  "bugs": "https://github.com/ZyrielZero/feature-organizer/issues",
+  "changelog": "https://github.com/ZyrielZero/feature-organizer/blob/main/CHANGELOG.md",
+  "readme": "https://github.com/ZyrielZero/feature-organizer/blob/main/README.md",
+  "license": "https://github.com/ZyrielZero/feature-organizer/blob/main/LICENSE",
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/feature-organizer.css"],
+  "languages": [{
+    "lang": "en",
+    "name": "English",
+    "path": "lang/en.json"
+  }],
+  "relationships": {
+    "systems": [{
+      "id": "dnd5e",
+      "type": "system",
+      "compatibility": {
+        "minimum": "5.0.0",
+        "verified": "5.1.10"
+      }
+    }]
+  }
+}

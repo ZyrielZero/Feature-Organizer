@@ -151,12 +151,13 @@ export class SheetIntegration {
     const recovery = uses?.recovery?.[0]?.period || '';
     const recoveryLabel = { sr: 'SR', lr: 'LR', day: 'Day', dawn: 'Dawn', dusk: 'Dusk' }[recovery] || '';
     
+    const safeName = foundry.utils.escapeHTML(item.name);
     li.innerHTML = `
       <div class="item-row draggable" draggable="true">
-        <div class="item-name item-action item-tooltip rollable" role="button" data-action="use" aria-label="${item.name}">
-          <img class="item-image gold-icon" src="${item.img}" alt="${item.name}" draggable="false">
+        <div class="item-name item-action item-tooltip rollable" role="button" data-action="use" aria-label="${safeName}">
+          <img class="item-image gold-icon" src="${item.img}" alt="${safeName}" draggable="false">
           <div class="name name-stacked">
-            <span class="title">${item.name}</span>
+            <span class="title">${safeName}</span>
           </div>
           <div class="tags"></div>
         </div>
@@ -171,12 +172,14 @@ export class SheetIntegration {
           </button>
         </div>
       </div>
+      <div class="item-description collapsible-content" hidden>
+        <div class="wrapper">
+          <div class="description"></div>
+        </div>
+      </div>
     `;
     
-    li.querySelector('.item-name').addEventListener('click', (e) => {
-      if (e.target.closest('button')) return;
-      item.sheet.render(true);
-    });
+    SheetIntegration._attachRowBehaviors(li, item);
     
     const row = li.querySelector('.item-row');
     row.addEventListener('dragstart', (e) => {
@@ -525,6 +528,70 @@ export class SheetIntegration {
     return featureType?.toLowerCase() || "other";
   }
 
+  /**
+   * Attach native-parity behaviors to a module-built item row:
+   * rich hover tooltip, click-to-use via the item's own usage pipeline,
+   * the system's context menu, and a lazily enriched description toggle.
+   * Used by both _createItemElement and _createNativeItemElement so the
+   * two row types cannot drift apart.
+   * @param {HTMLLIElement} li - The row element (template already injected)
+   * @param {Item5e} item - The item the row represents
+   */
+  static _attachRowBehaviors(li, item) {
+    // Rich hover tooltip: same markup native rows carry; dnd5e's tooltip
+    // observer resolves the loading section through data-uuid.
+    const nameEl = li.querySelector('.item-name');
+    nameEl.dataset.tooltip = `<section class="loading" data-uuid="${item.uuid}"><i class="fas fa-spinner fa-spin-pulse"></i></section>`;
+    nameEl.dataset.tooltipClass = 'dnd5e2 dnd5e-tooltip item-tooltip';
+    nameEl.dataset.tooltipDirection = 'LEFT';
+
+    // Click-to-use through Item5e#use: activity picker, usage dialog,
+    // and consumption all behave exactly as they do on native rows.
+    nameEl.addEventListener('click', async (e) => {
+      if (e.target.closest('button')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      await item.use();
+    });
+
+    // Context menu: re-dispatch as a contextmenu event so the system's own
+    // delegated menu opens (full native entry set, correct permissions).
+    li.querySelector('[data-context-menu]').addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      li.querySelector('.item-row').dispatchEvent(new PointerEvent('contextmenu', {
+        view: window, bubbles: true, cancelable: true,
+        clientX: e.clientX, clientY: e.clientY
+      }));
+    });
+
+    // Expand/collapse with a lazily enriched description (content links,
+    // inline rolls, and references render instead of raw enricher syntax).
+    li.querySelector('[data-action="toggleExpand"]').addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const btn = e.currentTarget;
+
+      const description = li.querySelector('.item-description');
+      const target = description.querySelector('.description');
+      if (!target.dataset.enriched) {
+        target.innerHTML = await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+          item.system.description?.value ?? '',
+          { rollData: item.getRollData?.() ?? {}, relativeTo: item, secrets: item.isOwner }
+        );
+        target.dataset.enriched = 'true';
+      }
+
+      const isHidden = description.hidden;
+      description.hidden = !isHidden;
+      li.classList.toggle('expanded', !isHidden);
+
+      const icon = btn.querySelector('i');
+      icon.classList.toggle('fa-expand', isHidden);
+      icon.classList.toggle('fa-compress', !isHidden);
+    });
+  }
+
   static _addCategoryButton(app, featuresTab, inventoryElement, actor, isEditMode) {
     featuresTab.querySelector('.fo-add-category-btn')?.remove();
     
@@ -639,12 +706,13 @@ export class SheetIntegration {
     const recovery = uses?.recovery?.[0]?.period || '';
     const recoveryLabel = { sr: 'SR', lr: 'LR', day: 'Day', dawn: 'Dawn', dusk: 'Dusk' }[recovery] || '';
     
+    const safeName = foundry.utils.escapeHTML(item.name);
     li.innerHTML = `
       <div class="item-row draggable" draggable="true">
-        <div class="item-name item-action item-tooltip rollable" role="button" data-action="use" aria-label="${item.name}">
-          <img class="item-image gold-icon" src="${item.img}" alt="${item.name}" draggable="false">
+        <div class="item-name item-action item-tooltip rollable" role="button" data-action="use" aria-label="${safeName}">
+          <img class="item-image gold-icon" src="${item.img}" alt="${safeName}" draggable="false">
           <div class="name name-stacked">
-            <span class="title">${item.name}</span>
+            <span class="title">${safeName}</span>
           </div>
           <div class="tags"></div>
         </div>
@@ -661,68 +729,12 @@ export class SheetIntegration {
       </div>
       <div class="item-description collapsible-content" hidden>
         <div class="wrapper">
-          <div class="description">${item.system.description?.value || ''}</div>
+          <div class="description"></div>
         </div>
       </div>
     `;
     
-    li.querySelector('.item-name').addEventListener('click', async (e) => {
-      if (e.target.closest('button')) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const activity = item.system.activities?.contents?.[0];
-      if (activity) {
-        await activity.use({}, {}, {});
-      } else {
-        await item.displayCard();
-      }
-    });
-    
-    li.querySelector('.fo-expand-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const description = li.querySelector('.item-description');
-      const isHidden = description.hidden;
-      description.hidden = !isHidden;
-      li.classList.toggle('expanded', !isHidden);
-      
-      const icon = e.currentTarget.querySelector('i');
-      icon.classList.toggle('fa-expand', isHidden);
-      icon.classList.toggle('fa-compress', !isHidden);
-    });
-    
-    li.querySelector('.fo-context-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const menuItems = [
-        {
-          name: "DND5E.ContextMenuActionEdit",
-          icon: '<i class="fas fa-edit"></i>',
-          callback: () => item.sheet.render(true)
-        },
-        {
-          name: "DND5E.ContextMenuActionDuplicate", 
-          icon: '<i class="fas fa-copy"></i>',
-          callback: () => item.clone({name: game.i18n.format("DOCUMENT.CopyOf", {name: item.name})}, {save: true})
-        },
-        {
-          name: "DND5E.ContextMenuActionDelete",
-          icon: '<i class="fas fa-trash"></i>',
-          callback: () => item.deleteDialog()
-        }
-      ];
-      
-      menuItems.unshift({
-        name: "DND5E.ContextMenuActionPost",
-        icon: '<i class="fas fa-comment"></i>',
-        callback: () => item.displayCard()
-      });
-      
-      const menu = new ContextMenu($(li), null, menuItems);
-      menu.render($(li));
-    });
+    SheetIntegration._attachRowBehaviors(li, item);
     
     const row = li.querySelector('.item-row');
     

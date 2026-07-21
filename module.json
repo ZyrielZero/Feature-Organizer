@@ -2,7 +2,7 @@
   "id": "feature-organizer",
   "title": "Feature Organizer",
   "description": "Organize character features into custom categories with drag-and-drop support. Create unlimited custom categories, move features between native categories (Class, Background, Species, Feats), and reorder category cards to suit your workflow. Perfect for homebrew-heavy campaigns or anyone wanting better character sheet organization.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "compatibility": {
     "minimum": "13",
     "verified": "13.351",
@@ -32,7 +32,7 @@
       "type": "system",
       "compatibility": {
         "minimum": "5.0.0",
-        "verified": "5.1.10"
+        "verified": "5.2.4"
       }
     }]
   }
